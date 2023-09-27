@@ -1,3 +1,4 @@
+import 'package:flutter/foundation.dart' show Key;
 import 'package:meta/meta.dart';
 
 /// Child area in the [MultiSplitView].
@@ -9,8 +10,13 @@ import 'package:meta/meta.dart';
 /// Before being visible for the first time, the [size] will be converted
 /// to [weight] according to the size of the widget.
 class Area {
-  Area({double? size, double? weight, this.minimalWeight, this.minimalSize})
-      : _size = size,
+  Area({
+    double? size,
+    double? weight,
+    this.minimalWeight,
+    this.minimalSize,
+    this.key,
+  })  : _size = size,
         _weight = weight {
     if (size != null && weight != null) {
       throw Exception('Cannot provide both a size and a weight.');
@@ -30,6 +36,7 @@ class Area {
 
   final double? minimalWeight;
   final double? minimalSize;
+  final Key? key;
 
   double? _size;
   double? get size => _size;
