@@ -36,6 +36,7 @@ class MultiSplitView extends StatefulWidget {
       this.onDividerDoubleTap,
       this.resizable = true,
       this.antiAliasingWorkaround = true,
+      this.debugRendering = false,
       List<Area>? initialAreas})
       : this.initialAreas =
             initialAreas != null ? List.from(initialAreas) : null,
@@ -66,6 +67,9 @@ class MultiSplitView extends StatefulWidget {
 
   /// Enables a workaround for https://github.com/flutter/flutter/issues/14288
   final bool antiAliasingWorkaround;
+
+  /// Renders debug information over the dividers and areas.
+  final bool debugRendering;
 
   @override
   State createState() => _MultiSplitViewState();
@@ -155,7 +159,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
             : constraints.maxHeight;
 
         _controller.fixWeights(
-            childrenCount: widget.children.length,
+            children: widget.children,
             fullSize: fullSize,
             dividerThickness: themeData.dividerThickness);
         if (_sizesCache == null ||
@@ -176,6 +180,12 @@ class _MultiSplitViewState extends State<MultiSplitView> {
                 start: descriptor.childStart,
                 end: descriptor.childEnd,
                 child: descriptor.widget));
+            if (widget.debugRendering) {
+              children.add(_buildDebugInfo(
+                start: descriptor.childStart,
+                area: descriptor.area,
+              ));
+            }
           } else if (descriptor is DividerWidgetDescriptor) {
             bool highlighted = (_draggingDividerIndex == descriptor.index ||
                 (_draggingDividerIndex == null &&
@@ -417,6 +427,26 @@ class _MultiSplitViewState extends State<MultiSplitView> {
         left: widget.axis == Axis.horizontal ? _convert(start, false) : 0,
         right: widget.axis == Axis.horizontal ? _convert(end, last) : 0,
         child: ClipRect(child: child));
+    return positioned;
+  }
+
+  Positioned _buildDebugInfo({
+    required double start,
+    required AdjacentArea area,
+  }) {
+    Positioned positioned = Positioned(
+        key: UniqueKey(),
+        width: 200,
+        top: widget.axis == Axis.horizontal ? 0 : _convert(start, false),
+        left: widget.axis == Axis.horizontal ? _convert(start, false) : 0,
+        // red container with white text that says "debug"
+        child: Container(
+            color: Colors.red,
+            child: Text(area.toString(),
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 10,
+                    fontWeight: FontWeight.bold))));
     return positioned;
   }
 

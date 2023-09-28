@@ -11,11 +11,16 @@ import 'area_geometry.dart';
 abstract class WidgetDescriptor {}
 
 class ContentWidgetDescriptor extends WidgetDescriptor {
-  ContentWidgetDescriptor(
-      {required this.widget, required this.childStart, required this.childEnd});
+  ContentWidgetDescriptor({
+    required this.widget,
+    required this.childStart,
+    required this.childEnd,
+    required this.area,
+  });
   final Widget widget;
   final double childStart;
   final double childEnd;
+  final AdjacentArea area;
 }
 
 class DividerWidgetDescriptor extends WidgetDescriptor {
@@ -35,11 +40,14 @@ abstract class AdjacentArea {}
 class KeyedArea extends AdjacentArea {
   KeyedArea({required this.key});
   final Key key;
+  @override
+  String toString() => 'KeyedArea(key: $key)';
 }
 
 class PositionalArea extends AdjacentArea {
   PositionalArea({required this.index});
   final int index;
+  String toString() => 'PositionalArea (index: $index)';
 }
 
 @internal
@@ -128,7 +136,7 @@ class SizesCache {
     for (final child in children) {
       final double childSize = _keyedGeometries[child.key] != null
           ? _keyedGeometries[child.key]!.size
-          : _geometries[positionIndex++].size;
+          : _geometries[positionIndex].size;
       final thisArea = _keyedGeometries[child.key] != null
           ? KeyedArea(key: child.key!)
           : PositionalArea(index: positionIndex);
@@ -136,9 +144,15 @@ class SizesCache {
         newBoundaries.add(Boundary(prevArea: prevArea, nextArea: thisArea));
       }
       prevArea = thisArea;
+      if (_keyedGeometries[child.key] == null) {
+        positionIndex++;
+      }
       childEnd = fullSize - childSize - childStart;
       result.add(ContentWidgetDescriptor(
-          widget: child, childStart: childStart, childEnd: childEnd));
+          widget: child,
+          childStart: childStart,
+          childEnd: childEnd,
+          area: thisArea));
       if (childIndex < children.length - 1) {
         dividerStart = childStart + childSize;
         dividerEnd = childEnd - dividerThickness;

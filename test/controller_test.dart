@@ -8,7 +8,7 @@ void main() {
     test('children: 2 / 1 area(minimalSize)', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(minimalSize: 100)]);
-      c.fixWeights(childrenCount: 2, fullSize: 210, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 210, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, .5);
       expect(c.getArea(1).weight, .5);
@@ -16,47 +16,47 @@ void main() {
     test('children: 2 / 1 area(minimalSize)', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(minimalSize: 100)]);
-      c.fixWeights(childrenCount: 2, fullSize: 110, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 110, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, 1);
       expect(c.getArea(1).weight, 0);
     });
     test('1', () {
       MultiSplitViewController c = MultiSplitViewController();
-      c.fixWeights(childrenCount: 0, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 0, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 0);
     });
     test('2', () {
       MultiSplitViewController c = MultiSplitViewController();
-      c.fixWeights(childrenCount: 1, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 1, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 1);
       expect(c.getArea(0).weight, 1);
     });
     test('3', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: 0)]);
-      c.fixWeights(childrenCount: 1, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 1, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 1);
       expect(c.getArea(0).weight, 1);
     });
     test('4', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: .5)]);
-      c.fixWeights(childrenCount: 1, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 1, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 1);
       expect(c.getArea(0).weight, 1);
     });
     test('5', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: 1)]);
-      c.fixWeights(childrenCount: 1, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 1, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 1);
       expect(c.getArea(0).weight, 1);
     });
     test('6', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: 0), Area(weight: 1)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, 0);
       expect(c.getArea(1).weight, 1);
@@ -64,7 +64,7 @@ void main() {
     test('7', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: .4), Area(weight: .6)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, .4);
       expect(c.getArea(1).weight, .6);
@@ -72,7 +72,7 @@ void main() {
     test('8', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: .1), Area(weight: .1)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, .5);
       expect(c.getArea(1).weight, .5);
@@ -80,7 +80,7 @@ void main() {
     test('9', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: .4)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, .4);
       expect(c.getArea(1).weight, .6);
@@ -88,7 +88,7 @@ void main() {
     test('10', () {
       MultiSplitViewController c = MultiSplitViewController(
           areas: [Area(weight: .2), Area(weight: .2), Area(weight: .6)]);
-      c.fixWeights(childrenCount: 4, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 4, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 4);
       expect(c.getArea(0).weight, closeTo(.15, delta));
       expect(c.getArea(1).weight, closeTo(.15, delta));
@@ -98,7 +98,7 @@ void main() {
     test('11', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: 0)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, 0);
       expect(c.getArea(1).weight, 1);
@@ -106,7 +106,7 @@ void main() {
     test('12', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(), Area(weight: 0)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, 1);
       expect(c.getArea(1).weight, 0);
@@ -114,7 +114,7 @@ void main() {
     test('13', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(), Area()]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, .5);
       expect(c.getArea(1).weight, .5);
@@ -122,7 +122,7 @@ void main() {
     test('14', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: 0), Area(weight: 0)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, .5);
       expect(c.getArea(1).weight, .5);
@@ -130,7 +130,7 @@ void main() {
     test('15', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: 1), Area(weight: 1)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, closeTo(.5, delta));
       expect(c.getArea(1).weight, closeTo(.5, delta));
@@ -138,18 +138,18 @@ void main() {
     test('16', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: .2), Area(weight: 1)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, closeTo(.16666, delta));
       expect(c.getArea(1).weight, closeTo(.83333, delta));
     });
     test('17', () {
       MultiSplitViewController c = MultiSplitViewController(areas: []);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, closeTo(.5, delta));
       expect(c.getArea(1).weight, closeTo(.5, delta));
-      c.fixWeights(childrenCount: 3, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 3, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 3);
       expect(c.getArea(0).weight, closeTo(.33333, delta));
       expect(c.getArea(1).weight, closeTo(.33333, delta));
@@ -158,13 +158,13 @@ void main() {
     test('18', () {
       MultiSplitViewController c =
           MultiSplitViewController(areas: [Area(weight: .5), Area(weight: .5)]);
-      c.fixWeights(childrenCount: 2, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 2, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 2);
       expect(c.getArea(0).weight, closeTo(.5, delta));
       expect(c.getArea(1).weight, closeTo(.5, delta));
 
       c.areas = [Area(weight: .5), Area(weight: .5), Area()];
-      c.fixWeights(childrenCount: 3, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 3, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 3);
       expect(c.getArea(0).weight, closeTo(.3333, delta));
       expect(c.getArea(1).weight, closeTo(.3333, delta));
@@ -173,7 +173,7 @@ void main() {
     test('19', () {
       MultiSplitViewController c = MultiSplitViewController(
           areas: [Area(weight: .5), Area(weight: .5), Area()]);
-      c.fixWeights(childrenCount: 3, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 3, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 3);
       expect(c.getArea(0).weight, closeTo(.3333, delta));
       expect(c.getArea(1).weight, closeTo(.3333, delta));
@@ -182,7 +182,7 @@ void main() {
     test('20', () {
       MultiSplitViewController c = MultiSplitViewController(
           areas: [Area(weight: .2), Area(weight: .8), Area()]);
-      c.fixWeights(childrenCount: 3, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 3, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 3);
       expect(c.getArea(0).weight, closeTo(.13333, delta));
       expect(c.getArea(1).weight, closeTo(.53333, delta));
@@ -191,7 +191,7 @@ void main() {
     test('21', () {
       MultiSplitViewController c = MultiSplitViewController(
           areas: [Area(weight: .2), Area(weight: .8), Area(minimalWeight: .5)]);
-      c.fixWeights(childrenCount: 3, fullSize: 1000, dividerThickness: 10);
+      c.fixWeights(numChildren: 3, fullSize: 1000, dividerThickness: 10);
       expect(c.areas.length, 3);
       expect(c.getArea(0).weight, closeTo(.1, delta));
       expect(c.getArea(1).weight, closeTo(.4, delta));
@@ -200,7 +200,7 @@ void main() {
     test('22', () {
       MultiSplitViewController c = MultiSplitViewController(
           areas: [Area(weight: .2), Area(weight: .8), Area(minimalSize: 500)]);
-      c.fixWeights(childrenCount: 3, fullSize: 1020, dividerThickness: 10);
+      c.fixWeights(numChildren: 3, fullSize: 1020, dividerThickness: 10);
       expect(c.areas.length, 3);
       expect(c.getArea(0).weight, closeTo(.1, delta));
       expect(c.getArea(1).weight, closeTo(.4, delta));
