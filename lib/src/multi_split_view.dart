@@ -204,63 +204,28 @@ class _MultiSplitViewState extends State<MultiSplitView> {
                   behavior: HitTestBehavior.translucent,
                   onTap: () => _onDividerTap(descriptor.index),
                   onDoubleTap: () => _onDividerDoubleTap(descriptor.index),
-                  onHorizontalDragDown: widget.axis == Axis.vertical
-                      ? null
-                      : (detail) {
-                          setState(() {
-                            _draggingDividerIndex = descriptor.index;
-                          });
-                          final pos = _position(context, detail.globalPosition);
-                          _updateInitialDrag(descriptor.index, pos.dx);
-                        },
-                  onHorizontalDragCancel: widget.axis == Axis.vertical
-                      ? null
-                      : () => _onDragCancel(),
-                  onHorizontalDragEnd: widget.axis == Axis.vertical
-                      ? null
-                      : (detail) => _onDragEnd(),
-                  onHorizontalDragUpdate: widget.axis == Axis.vertical
-                      ? null
-                      : (detail) {
-                          if (_draggingDividerIndex == null) {
-                            return;
-                          }
-                          final pos = _position(context, detail.globalPosition);
-                          double diffX = pos.dx - _initialDrag!.initialDragPos;
+                  onPanDown: (detail) {
+                    setState(() {
+                      _draggingDividerIndex = descriptor.index;
+                    });
+                    final pos = _position(context, detail.globalPosition);
+                    _updateInitialDrag(descriptor.index,
+                        widget.axis == Axis.horizontal ? pos.dx : pos.dy);
+                  },
+                  onPanCancel: () => _onDragCancel(),
+                  onPanEnd: (detail) => _onDragEnd(),
+                  onPanUpdate: (detail) {
+                    if (_draggingDividerIndex == null) {
+                      return;
+                    }
+                    final pos = _position(context, detail.globalPosition);
+                    double diff =
+                        (widget.axis == Axis.horizontal ? pos.dx : pos.dy) -
+                            _initialDrag!.initialDragPos;
 
-                          _updateDifferentWeights(
-                              dividerIndex: descriptor.index,
-                              diffPos: diffX,
-                              pos: pos.dx);
-                        },
-                  onVerticalDragDown: widget.axis == Axis.horizontal
-                      ? null
-                      : (detail) {
-                          setState(() {
-                            _draggingDividerIndex = descriptor.index;
-                          });
-                          final pos = _position(context, detail.globalPosition);
-                          _updateInitialDrag(descriptor.index, pos.dy);
-                        },
-                  onVerticalDragCancel: widget.axis == Axis.horizontal
-                      ? null
-                      : () => _onDragCancel(),
-                  onVerticalDragEnd: widget.axis == Axis.horizontal
-                      ? null
-                      : (detail) => _onDragEnd(),
-                  onVerticalDragUpdate: widget.axis == Axis.horizontal
-                      ? null
-                      : (detail) {
-                          if (_draggingDividerIndex == null) {
-                            return;
-                          }
-                          final pos = _position(context, detail.globalPosition);
-                          double diffY = pos.dy - _initialDrag!.initialDragPos;
-                          _updateDifferentWeights(
-                              dividerIndex: descriptor.index,
-                              diffPos: diffY,
-                              pos: pos.dy);
-                        },
+                    _updateDifferentWeights(
+                        dividerIndex: descriptor.index, diffPos: diff);
+                  },
                   child: dividerWidget);
               dividerWidget = _mouseRegion(
                   index: descriptor.index,
@@ -404,9 +369,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
 
   /// Calculates the new weights and sets if they are different from the current one.
   void _updateDifferentWeights(
-      {required int dividerIndex,
-      required double diffPos,
-      required double pos}) {
+      {required int dividerIndex, required double diffPos}) {
     if (diffPos == 0) {
       return;
     }
