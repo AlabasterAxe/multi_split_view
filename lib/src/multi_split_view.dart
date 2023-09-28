@@ -12,6 +12,8 @@ import 'package:multi_split_view/src/theme_data.dart';
 import 'package:multi_split_view/src/theme_widget.dart';
 import 'package:multi_split_view/src/typedefs.dart';
 
+import 'internal/area_geometry.dart';
+
 /// A widget to provides horizontal or vertical multiple split view.
 class MultiSplitView extends StatefulWidget {
   static const Axis defaultAxis = Axis.horizontal;
@@ -227,7 +229,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
                           double diffX = pos.dx - _initialDrag!.initialDragPos;
 
                           _updateDifferentWeights(
-                              childIndex: descriptor.index,
+                              dividerIndex: descriptor.index,
                               diffPos: diffX,
                               pos: pos.dx);
                         },
@@ -255,7 +257,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
                           final pos = _position(context, detail.globalPosition);
                           double diffY = pos.dy - _initialDrag!.initialDragPos;
                           _updateDifferentWeights(
-                              childIndex: descriptor.index,
+                              dividerIndex: descriptor.index,
                               diffPos: diffY,
                               pos: pos.dy);
                         },
@@ -327,8 +329,8 @@ class _MultiSplitViewState extends State<MultiSplitView> {
       return;
     }
     for (int i = 0; i < _controller.areasLength; i++) {
-      final Area area = _controller.getArea(i);
-      double size = _sizesCache!.sizes[i];
+      final area = _controller.getArea(i);
+      final size = _sizesCache!.getGeomtryByPositionIndex(i).size;
       area.updateWeight(size / _sizesCache!.childrenSize);
     }
     setState(() {
@@ -353,49 +355,45 @@ class _MultiSplitViewState extends State<MultiSplitView> {
         child: dividerWidget);
   }
 
-  void _updateInitialDrag(int childIndex, double initialDragPos) {
-    final double initialChild1Size = _sizesCache!.sizes[childIndex];
-    final double initialChild2Size = _sizesCache!.sizes[childIndex + 1];
-    final double minimalChild1Size = _sizesCache!.minimalSizes[childIndex];
-    final double minimalChild2Size = _sizesCache!.minimalSizes[childIndex + 1];
-    final double sumMinimals = minimalChild1Size + minimalChild2Size;
-    final double sumSizes = initialChild1Size + initialChild2Size;
+  void _updateInitialDrag(int dividerIndex, double initialDragPos) {
+    final AreaGeometry child1Geometry =
+        _sizesCache!.getPrevAreaGeometry(dividerIndex);
+    final AreaGeometry child2Geometry =
+        _sizesCache!.getNextAreaGeometry(dividerIndex);
 
     double posLimitStart = 0;
     double posLimitEnd = 0;
     double child1Start = 0;
     double child2End = 0;
-    for (int i = 0; i <= childIndex; i++) {
-      if (i < childIndex) {
-        child1Start += _sizesCache!.sizes[i];
+    for (int i = 0; i <= dividerIndex; i++) {
+      final prevAreaGeometry = _sizesCache!.getPrevAreaGeometry(i);
+      final nextAreaGeometry = _sizesCache!.getNextAreaGeometry(i);
+      if (i < dividerIndex) {
+        child1Start += prevAreaGeometry.size;
         child1Start += _sizesCache!.dividerThickness;
-        child2End += _sizesCache!.sizes[i];
+        child2End += prevAreaGeometry.size;
         child2End += _sizesCache!.dividerThickness;
-        posLimitStart += _sizesCache!.sizes[i];
+        posLimitStart += prevAreaGeometry.size;
         posLimitStart += _sizesCache!.dividerThickness;
-        posLimitEnd += _sizesCache!.sizes[i];
+        posLimitEnd += prevAreaGeometry.size;
         posLimitEnd += _sizesCache!.dividerThickness;
-      } else if (i == childIndex) {
-        posLimitStart += _sizesCache!.minimalSizes[i];
-        posLimitEnd += _sizesCache!.sizes[i];
+      } else if (i == dividerIndex) {
+        posLimitStart += prevAreaGeometry.minSize ?? 0;
+        posLimitEnd += prevAreaGeometry.size;
         posLimitEnd += _sizesCache!.dividerThickness;
-        posLimitEnd += _sizesCache!.sizes[i + 1];
-        child2End += _sizesCache!.sizes[i];
+        posLimitEnd += nextAreaGeometry.size;
+        child2End += prevAreaGeometry.size;
         child2End += _sizesCache!.dividerThickness;
-        child2End += _sizesCache!.sizes[i + 1];
+        child2End += nextAreaGeometry.size;
         posLimitEnd = math.max(
-            posLimitStart, posLimitEnd - _sizesCache!.minimalSizes[i + 1]);
+            posLimitStart, posLimitEnd - (nextAreaGeometry.minSize ?? 0));
       }
     }
 
     _initialDrag = InitialDrag(
         initialDragPos: initialDragPos,
-        initialChild1Size: initialChild1Size,
-        initialChild2Size: initialChild2Size,
-        minimalChild1Size: minimalChild1Size,
-        minimalChild2Size: minimalChild2Size,
-        sumMinimals: sumMinimals,
-        sumSizes: sumSizes,
+        initialChild1Geometry: child1Geometry,
+        initialChild2Geometry: child2Geometry,
         child1Start: child1Start,
         child2End: child2End,
         posLimitStart: posLimitStart,
@@ -406,7 +404,9 @@ class _MultiSplitViewState extends State<MultiSplitView> {
 
   /// Calculates the new weights and sets if they are different from the current one.
   void _updateDifferentWeights(
-      {required int childIndex, required double diffPos, required double pos}) {
+      {required int dividerIndex,
+      required double diffPos,
+      required double pos}) {
     if (diffPos == 0) {
       return;
     }
@@ -416,52 +416,23 @@ class _MultiSplitViewState extends State<MultiSplitView> {
       return;
     }
 
-    double newChild1Size;
-    double newChild2Size;
-
-    if (diffPos.isNegative) {
-      // divider moving on left/top from initial mouse position
-      if (_initialDrag!.posBeforeMinimalChild1) {
-        // can't shrink, already smaller than minimal
-        return;
-      }
-      newChild1Size = math.max(_initialDrag!.minimalChild1Size,
-          _initialDrag!.initialChild1Size + diffPos);
-      newChild2Size = _initialDrag!.sumSizes - newChild1Size;
-
-      if (_initialDrag!.posAfterMinimalChild2) {
-        if (newChild2Size > _initialDrag!.minimalChild2Size) {
-          _initialDrag!.posAfterMinimalChild2 = false;
-        }
-      } else if (newChild2Size < _initialDrag!.minimalChild2Size) {
-        double diff = _initialDrag!.minimalChild2Size - newChild2Size;
-        newChild2Size += diff;
-        newChild1Size -= diff;
-      }
-    } else {
-      // divider moving on right/bottom from initial mouse position
-      if (_initialDrag!.posAfterMinimalChild2) {
-        // can't shrink, already smaller than minimal
-        return;
-      }
-      newChild2Size = math.max(_initialDrag!.minimalChild2Size,
-          _initialDrag!.initialChild2Size - diffPos);
-      newChild1Size = _initialDrag!.sumSizes - newChild2Size;
-
-      if (_initialDrag!.posBeforeMinimalChild1) {
-        if (newChild1Size > _initialDrag!.minimalChild1Size) {
-          _initialDrag!.posBeforeMinimalChild1 = false;
-        }
-      } else if (newChild1Size < _initialDrag!.minimalChild1Size) {
-        double diff = _initialDrag!.minimalChild1Size - newChild1Size;
-        newChild1Size += diff;
-        newChild2Size -= diff;
-      }
+    if (diffPos.isNegative && _initialDrag!.posBeforeMinimalChild1 ||
+        diffPos > 0 && _initialDrag!.posAfterMinimalChild2) {
+      return;
     }
-    if (_sizesCache != null && newChild1Size >= 0 && newChild2Size >= 0) {
+
+    if (_sizesCache != null) {
       setState(() {
-        _sizesCache!.sizes[childIndex] = newChild1Size;
-        _sizesCache!.sizes[childIndex + 1] = newChild2Size;
+        final res = _sizesCache!.dragDivider(
+            dividerIndex,
+            diffPos,
+            _initialDrag!.initialChild1Geometry.size,
+            _initialDrag!.initialChild2Geometry.size,
+            _initialDrag!.posAfterMinimalChild2,
+            _initialDrag!.posBeforeMinimalChild1);
+
+        _initialDrag!.posAfterMinimalChild2 = res[0];
+        _initialDrag!.posBeforeMinimalChild1 = res[1];
       });
     }
   }
