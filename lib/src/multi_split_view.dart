@@ -209,7 +209,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
                       _draggingDividerIndex = descriptor.index;
                     });
                     final pos = _position(context, detail.globalPosition);
-                    _updateInitialDrag(descriptor.index,
+                    _setInitialDrag(descriptor.index,
                         widget.axis == Axis.horizontal ? pos.dx : pos.dy);
                   },
                   onPanCancel: () => _onDragCancel(),
@@ -223,7 +223,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
                         (widget.axis == Axis.horizontal ? pos.dx : pos.dy) -
                             _initialDrag!.initialDragPos;
 
-                    _updateDifferentWeights(
+                    _updateWeights(
                         dividerIndex: descriptor.index, diffPos: diff);
                   },
                   child: dividerWidget);
@@ -320,7 +320,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
         child: dividerWidget);
   }
 
-  void _updateInitialDrag(int dividerIndex, double initialDragPos) {
+  void _setInitialDrag(int dividerIndex, double initialDragPos) {
     final AreaGeometry child1Geometry =
         _sizesCache!.getPrevAreaGeometry(dividerIndex);
     final AreaGeometry child2Geometry =
@@ -357,8 +357,8 @@ class _MultiSplitViewState extends State<MultiSplitView> {
 
     _initialDrag = InitialDrag(
         initialDragPos: initialDragPos,
-        initialChild1Geometry: child1Geometry,
-        initialChild2Geometry: child2Geometry,
+        initialChild1Geometry: child1Geometry.clone(),
+        initialChild2Geometry: child2Geometry.clone(),
         child1Start: child1Start,
         child2End: child2End,
         posLimitStart: posLimitStart,
@@ -368,8 +368,7 @@ class _MultiSplitViewState extends State<MultiSplitView> {
   }
 
   /// Calculates the new weights and sets if they are different from the current one.
-  void _updateDifferentWeights(
-      {required int dividerIndex, required double diffPos}) {
+  void _updateWeights({required int dividerIndex, required double diffPos}) {
     if (diffPos == 0) {
       return;
     }

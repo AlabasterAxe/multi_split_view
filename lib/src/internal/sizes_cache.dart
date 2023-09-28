@@ -1,3 +1,4 @@
+import 'dart:developer';
 import 'dart:math' show max;
 
 import 'package:flutter/widgets.dart';
@@ -219,6 +220,8 @@ class SizesCache {
     double newNextAreaSize;
     double sumSizes = initialNextAreaSize + initialPrevAreaSize;
 
+    log(initialPrevAreaSize.toString());
+    log(initialNextAreaSize.toString());
     if (delta.isNegative) {
       // divider moving on left/top from initial mouse position
       newPrevAreaSize = max(minimalPrevAreaSize, initialPrevAreaSize + delta);

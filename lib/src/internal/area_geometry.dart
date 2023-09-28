@@ -9,12 +9,8 @@ class AreaGeometry {
     this.maxSize,
   });
 
-  AreaGeometry.clone(AreaGeometry x)
-      : this(
-          size: x.size,
-          minSize: x.minSize,
-          maxSize: x.maxSize,
-        );
+  AreaGeometry clone() =>
+      AreaGeometry(size: size, minSize: minSize, maxSize: maxSize);
 
   @override
   AreaGeometry operator +(AreaGeometry other) {
