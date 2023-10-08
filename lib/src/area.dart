@@ -16,6 +16,7 @@ class Area {
     this.minimalWeight,
     this.minimalSize,
     this.key,
+    this.flex = false,
   })  : _size = size,
         _weight = weight {
     if (size != null && weight != null) {
@@ -37,6 +38,7 @@ class Area {
   final double? minimalWeight;
   final double? minimalSize;
   final Key? key;
+  final bool flex;
 
   double? _size;
   double? get size => _size;
@@ -46,8 +48,19 @@ class Area {
 
   @internal
   void updateWeight(double value) {
+    if (!flex) {
+      throw Exception('Cannot update the weight of a non-flexible area.');
+    }
     _size = null;
     _weight = value;
+  }
+
+  @internal
+  void updateSize(double value) {
+    if (flex) {
+      throw Exception('Cannot update the size of a flexible area.');
+    }
+    _size = value;
   }
 
   bool get hasMinimal => minimalSize != null || minimalWeight != null;

@@ -70,7 +70,7 @@ class SizesCache {
     Map<Key, AreaGeometry> keyedGeometries = {};
     for (Area area in areas) {
       final geometry = AreaGeometry(
-        size: area.weight! * childrenSize,
+        size: area.flex ? area.weight! * childrenSize : area.size!,
         minSize: area.minimalWeight != null
             ? area.minimalWeight! * childrenSize
             : area.minimalSize ?? 0,

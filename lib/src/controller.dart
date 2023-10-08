@@ -11,7 +11,7 @@ import 'package:multi_split_view/src/area.dart';
 /// It is not allowed to share this controller between [MultiSplitView]
 /// instances.
 class MultiSplitViewController extends ChangeNotifier {
-  static const double _higherPrecision = 1.0000000000001;
+  static const double _one_highPrecision = 1.0000000000001;
 
   /// Creates an [MultiSplitViewController].
   ///
@@ -80,6 +80,12 @@ class MultiSplitViewController extends ChangeNotifier {
 
     final newAreas = <Area>[];
     int existingAreaIndex = 0;
+
+    // if a new flexible area is added:
+    //  all non flexible area sizes are preserved, the newly added area is given 1/n of the available space where n is the number of flexible children
+    //  the remaining flexible spaces are distributed according to their previous weight.
+    // if a new flexible area is removed:
+    //  all non flexible area sizes are preserved, the remaining flexible spaces are distributed according to their previous weight.
     for (final child in children) {
       final key = child.key;
       final keyedArea = _keyedAreas[key];
@@ -108,91 +114,45 @@ class MultiSplitViewController extends ChangeNotifier {
     }
     _areas = newAreas;
 
-    int nullWeightCount = 0;
-    for (final area in _areas) {
-      if (area.size != null) {
-        area.updateWeight(area.size! / availableSize);
-      }
-      if (area.weight == null) {
-        nullWeightCount++;
-      }
-    }
+    final flexAreas = _areas.where((area) => area.flex).toList();
 
+    int unsizedAreaCount =
+        _areas.where((area) => area.weight == null && area.size == null).length;
     double weightSum = _weightSum();
 
     // fill null weights
-    if (nullWeightCount > 0) {
-      double r = 0;
-      if (weightSum < MultiSplitViewController._higherPrecision) {
-        r = (1 - weightSum) / nullWeightCount;
-      }
-      if (r == 0) {
-        // shrinking non nulls
-        double newWeight = 0;
-        _areas.forEach((area) {
-          if (area.weight != null) {
-            final double r = area.weight! / numChildren;
-            area.updateWeight(area.weight! - r);
-            newWeight += r / nullWeightCount;
-          }
-        });
-        _areas.forEach((area) {
-          if (area.weight == null) {
-            area.updateWeight(newWeight);
-          }
-        });
-      } else {
-        // updating the null weights
-        _areas.forEach((area) {
-          if (area.weight == null) {
-            area.updateWeight(r);
-          }
+    if (unsizedAreaCount > 0) {
+      print('have unsized areas $unsizedAreaCount');
+      double remainder =
+          math.max(MultiSplitViewController._one_highPrecision - weightSum, 0) /
+              unsizedAreaCount;
+
+      // If there isn't already remaining space for the null areas
+      // shrink the non null flexible areas to make space.
+      if (remainder == 0) {
+        flexAreas
+            .where((area) => area.weight != null && area.flex)
+            .forEach((area) {
+          final double r = area.weight! / flexAreas.length;
+          area.updateWeight(area.weight! - r);
+          remainder += r / unsizedAreaCount;
         });
       }
+
+      // updating the null weights
+      _areas
+          .where((area) => area.weight == null || area.size == null)
+          .forEach((area) {
+        if (area.flex) {
+          area.updateWeight(remainder);
+        } else {
+          area.updateSize(remainder * availableSize);
+        }
+      });
       weightSum = _weightSum();
     }
 
-    // removing over weight...
-    if (weightSum > MultiSplitViewController._higherPrecision) {
-      final over = weightSum - 1;
-      double r = over / weightSum;
-      areas.forEach(
-          (area) => area.updateWeight(area.weight! - (area.weight! * r)));
-    }
-
-    if (_areas.length == numChildren) {
-      _fillWeightsEqually(numChildren, weightSum);
-      _applyMinimal(availableSize: availableSize);
-      return;
-    } else if (_areas.length < numChildren) {
-      // numChildren has been added.
-      int addedChildrenCount = numChildren - _areas.length;
-      double newWeight = 0;
-      if (weightSum < 1) {
-        newWeight = (1 - weightSum) / addedChildrenCount;
-      } else {
-        _areas.forEach((area) {
-          final double r = area.weight! / numChildren;
-          area.updateWeight(area.weight! - r);
-          newWeight += r / addedChildrenCount;
-        });
-      }
-      for (int i = 0; i < addedChildrenCount; i++) {
-        _areas.add(Area(weight: newWeight));
-      }
-    } else {
-      // numChildren has been removed.
-      double removedWeight = 0;
-      while (_areas.length > numChildren) {
-        removedWeight += _areas.removeLast().weight!;
-      }
-      if (_areas.isNotEmpty) {
-        double w = removedWeight / _areas.length;
-        _areas.forEach((area) => area.updateWeight(area.weight! + w));
-      }
-    }
-    _fillWeightsEqually(numChildren, _weightSum());
-    _applyMinimal(availableSize: availableSize);
+    // _applyMinimal(availableSize: availableSize);
   }
 
   /// Fills equally the missing weights

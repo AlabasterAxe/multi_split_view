@@ -303,10 +303,26 @@ class _MultiSplitViewState extends State<MultiSplitView> {
     if (_draggingDividerIndex == null) {
       return;
     }
+
+    double totalFlexArea = 0;
+    for (int i = 0; i < _controller.areasLength; i++) {
+      final area = _controller.getArea(i);
+      if (area.flex) {
+        totalFlexArea += _sizesCache!.getGeomtryByPositionIndex(i).size;
+      }
+    }
     for (int i = 0; i < _controller.areasLength; i++) {
       final area = _controller.getArea(i);
       final size = _sizesCache!.getGeomtryByPositionIndex(i).size;
-      area.updateWeight(size / _sizesCache!.childrenSize);
+      if (area.flex) {
+        print(area.key);
+        print('size: $size');
+        print('flex area: $totalFlexArea');
+        print('weight: ${size / totalFlexArea}');
+        area.updateWeight(size / totalFlexArea);
+      } else {
+        area.updateSize(size);
+      }
     }
     setState(() {
       _draggingDividerIndex = null;
