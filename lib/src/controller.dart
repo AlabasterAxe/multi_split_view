@@ -122,7 +122,6 @@ class MultiSplitViewController extends ChangeNotifier {
 
     // fill null weights
     if (unsizedAreaCount > 0) {
-      print('have unsized areas $unsizedAreaCount');
       double remainder =
           math.max(MultiSplitViewController._one_highPrecision - weightSum, 0) /
               unsizedAreaCount;
@@ -150,76 +149,6 @@ class MultiSplitViewController extends ChangeNotifier {
         }
       });
       weightSum = _weightSum();
-    }
-
-    // _applyMinimal(availableSize: availableSize);
-  }
-
-  /// Fills equally the missing weights
-  void _fillWeightsEqually(int childrenCount, double weightSum) {
-    if (weightSum < 1) {
-      double availableWeight = 1 - weightSum;
-      if (availableWeight > 0) {
-        double w = availableWeight / childrenCount;
-        for (int i = 0; i < _areas.length; i++) {
-          final Area area = _areas[i];
-          area.updateWeight(area.weight! + w);
-        }
-      }
-    }
-  }
-
-  /// Fix the weights to the minimal size/weight.
-  void _applyMinimal({required double availableSize}) {
-    double totalNonMinimalWeight = 0;
-    double totalMinimalWeight = 0;
-    int minimalCount = 0;
-    for (int i = 0; i < _areas.length; i++) {
-      Area area = _areas[i];
-      if (area.minimalSize != null) {
-        double minimalWeight = area.minimalSize! / availableSize;
-        totalMinimalWeight += minimalWeight;
-        minimalCount++;
-      } else if (area.minimalWeight != null) {
-        totalMinimalWeight += area.minimalWeight!;
-        minimalCount++;
-      } else {
-        totalNonMinimalWeight += area.weight!;
-      }
-    }
-    if (totalMinimalWeight > 0) {
-      double reducerMinimalWeight = 0;
-      if (totalMinimalWeight > 1) {
-        reducerMinimalWeight = ((totalMinimalWeight - 1) / minimalCount);
-        totalMinimalWeight = 1;
-      }
-      double totalReducerNonMinimalWeight = 0;
-      if (totalMinimalWeight + totalNonMinimalWeight > 1) {
-        totalReducerNonMinimalWeight =
-            (totalMinimalWeight + totalNonMinimalWeight - 1);
-      }
-      for (int i = 0; i < _areas.length; i++) {
-        final Area area = _areas[i];
-        if (area.minimalSize != null) {
-          double minimalWeight = math.max(
-              0, (area.minimalSize! / availableSize) - reducerMinimalWeight);
-          if (area.weight! < minimalWeight) {
-            area.updateWeight(minimalWeight);
-          }
-        } else if (area.minimalWeight != null) {
-          double minimalWeight =
-              math.max(0, area.minimalWeight! - reducerMinimalWeight);
-          if (area.weight! < minimalWeight) {
-            area.updateWeight(minimalWeight);
-          }
-        } else if (totalReducerNonMinimalWeight > 0) {
-          double reducer = totalReducerNonMinimalWeight *
-              area.weight! /
-              totalNonMinimalWeight;
-          double newWeight = math.max(0, area.weight! - reducer);
-          area.updateWeight(newWeight);
-        }
-      }
     }
   }
 

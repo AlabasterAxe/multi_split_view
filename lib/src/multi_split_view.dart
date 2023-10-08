@@ -315,10 +315,6 @@ class _MultiSplitViewState extends State<MultiSplitView> {
       final area = _controller.getArea(i);
       final size = _sizesCache!.getGeomtryByPositionIndex(i).size;
       if (area.flex) {
-        print(area.key);
-        print('size: $size');
-        print('flex area: $totalFlexArea');
-        print('weight: ${size / totalFlexArea}');
         area.updateWeight(size / totalFlexArea);
       } else {
         area.updateSize(size);
