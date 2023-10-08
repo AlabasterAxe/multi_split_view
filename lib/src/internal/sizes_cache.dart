@@ -68,9 +68,15 @@ class SizesCache {
     final double childrenSize = fullSize - totalDividerSize;
     List<AreaGeometry> geometries = [];
     Map<Key, AreaGeometry> keyedGeometries = {};
+
+    // the amount of space that is not occupied by fixed-size children
+    final double flexSize = childrenSize -
+        areas
+            .where((area) => !area.flex)
+            .fold<double>(0, (acc, area) => acc + (area.size ?? 0));
     for (Area area in areas) {
       final geometry = AreaGeometry(
-        size: area.flex ? area.weight! * childrenSize : area.size!,
+        size: area.flex ? area.weight! * flexSize : area.size!,
         minSize: area.minimalWeight != null
             ? area.minimalWeight! * childrenSize
             : area.minimalSize ?? 0,
