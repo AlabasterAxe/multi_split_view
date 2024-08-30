@@ -17,6 +17,7 @@ class Area {
     this.minimalSize,
     this.key,
     this.flex = false,
+    this.collapseSize,
   })  : _size = size,
         _weight = weight {
     if (size != null && weight != null) {
@@ -37,6 +38,7 @@ class Area {
 
   final double? minimalWeight;
   final double? minimalSize;
+  final double? collapseSize;
   final Key? key;
   final bool flex;
 

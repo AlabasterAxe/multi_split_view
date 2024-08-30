@@ -80,6 +80,7 @@ class SizesCache {
         minSize: area.minimalWeight != null
             ? area.minimalWeight! * childrenSize
             : area.minimalSize ?? 0,
+        collapseSize: area.collapseSize,
       );
 
       if (area.key != null) {
@@ -236,13 +237,25 @@ class SizesCache {
     double minimalPrevAreaSize = _getGeometry(boundary.prevArea).minSize ?? 0;
     double minimalNextAreaSize = _getGeometry(boundary.nextArea).minSize ?? 0;
 
+    double collapsePrevAreaSize =
+        _getGeometry(boundary.prevArea).collapseSize ?? 0;
+    double collapseNextAreaSize =
+        _getGeometry(boundary.nextArea).collapseSize ?? 0;
+
     double newPrevAreaSize;
     double newNextAreaSize;
     double sumSizes = initialNextAreaSize + initialPrevAreaSize;
 
     if (delta.isNegative) {
+      final proposedPrevAreaSize = initialPrevAreaSize + delta;
+
+      if (proposedPrevAreaSize < collapsePrevAreaSize) {
+        newPrevAreaSize = 0;
+      } else {
+        newPrevAreaSize = max(minimalPrevAreaSize, proposedPrevAreaSize);
+      }
+
       // divider moving on left/top from initial mouse position
-      newPrevAreaSize = max(minimalPrevAreaSize, initialPrevAreaSize + delta);
       newNextAreaSize = sumSizes - newPrevAreaSize;
 
       if (posAfterNextChild) {
@@ -255,7 +268,14 @@ class SizesCache {
         newPrevAreaSize -= diff;
       }
     } else {
-      newNextAreaSize = max(minimalNextAreaSize, initialNextAreaSize - delta);
+      final proposedNextAreaSize = initialNextAreaSize - delta;
+
+      if (proposedNextAreaSize < collapseNextAreaSize) {
+        newNextAreaSize = 0;
+      } else {
+        newNextAreaSize = max(minimalNextAreaSize, proposedNextAreaSize);
+      }
+
       newPrevAreaSize = sumSizes - newNextAreaSize;
 
       if (posBeforePrevChild) {
