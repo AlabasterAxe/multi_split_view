@@ -1,4 +1,3 @@
-import 'dart:developer';
 import 'dart:math' show max;
 
 import 'package:flutter/widgets.dart';
@@ -258,6 +257,17 @@ class SizesCache {
       // divider moving on left/top from initial mouse position
       newNextAreaSize = sumSizes - newPrevAreaSize;
 
+      // handle the case when the next area has been collapsed
+      if (initialNextAreaSize == 0) {
+        if (newNextAreaSize < collapseNextAreaSize) {
+          newNextAreaSize = 0;
+          newPrevAreaSize = sumSizes;
+        } else if (newNextAreaSize < minimalNextAreaSize) {
+          newNextAreaSize = minimalNextAreaSize;
+          newPrevAreaSize = sumSizes - newNextAreaSize;
+        }
+      }
+
       if (posAfterNextChild) {
         if (newNextAreaSize > minimalNextAreaSize) {
           posAfterNextChild = false;
@@ -277,6 +287,17 @@ class SizesCache {
       }
 
       newPrevAreaSize = sumSizes - newNextAreaSize;
+
+      // handle the case when the prev area has been collapsed
+      if (initialPrevAreaSize == 0) {
+        if (newPrevAreaSize < collapsePrevAreaSize) {
+          newPrevAreaSize = 0;
+          newNextAreaSize = sumSizes;
+        } else if (newPrevAreaSize < minimalPrevAreaSize) {
+          newPrevAreaSize = minimalPrevAreaSize;
+          newNextAreaSize = sumSizes - newPrevAreaSize;
+        }
+      }
 
       if (posBeforePrevChild) {
         if (newPrevAreaSize > minimalPrevAreaSize) {

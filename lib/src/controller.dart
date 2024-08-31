@@ -65,6 +65,13 @@ class MultiSplitViewController extends ChangeNotifier {
     return sum;
   }
 
+  void resetSizes() {
+    for (final area in _areas) {
+      area.reset();
+    }
+    this.notifyListeners();
+  }
+
   /// Adjusts the weights according to the number of children.
   /// New children will receive a percentage of current children.
   /// Excluded children will distribute their weights to the existing ones.

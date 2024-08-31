@@ -19,7 +19,9 @@ class Area {
     this.flex = false,
     this.collapseSize,
   })  : _size = size,
-        _weight = weight {
+        _weight = weight,
+        _initialSize = size,
+        _initialWeight = weight {
     if (size != null && weight != null) {
       throw Exception('Cannot provide both a size and a weight.');
     }
@@ -36,6 +38,8 @@ class Area {
     _check('minimalSize', minimalSize);
   }
 
+  final double? _initialSize;
+  final double? _initialWeight;
   final double? minimalWeight;
   final double? minimalSize;
   final double? collapseSize;
@@ -63,6 +67,12 @@ class Area {
       throw Exception('Cannot update the size of a flexible area.');
     }
     _size = value;
+  }
+
+  @internal
+  void reset() {
+    _size = _initialSize;
+    _weight = _initialWeight;
   }
 
   bool get hasMinimal => minimalSize != null || minimalWeight != null;
